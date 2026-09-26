@@ -70,9 +70,9 @@
 
     // 產生新題目
     function generateQuestion() {
-        // 隨機產生 1 到 50 的數字
-        num1 = Math.floor(Math.random() * 50) + 1;
-        num2 = Math.floor(Math.random() * 50) + 1;
+        // 隨機產生 1 到 9999 的數字
+        num1 = Math.floor(Math.random() * 9999) + 1;
+        num2 = Math.floor(Math.random() * 9999) + 1;
         correctAnswer = num1 + num2;
         
         document.getElementById('question').innerText = `${num1} + ${num2} =`;
