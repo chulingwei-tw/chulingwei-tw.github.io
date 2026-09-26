@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ 數學心算大挑戰 ⚡</title>
+    <title>⚡ 3、4位數加減大挑戰 ⚡</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -20,62 +20,84 @@
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             text-align: center;
-            max-width: 400px;
+            max-width: 450px;
             width: 100%;
         }
-        h1 { color: #333; }
+        h1 { color: #2c3e50; font-size: 2rem; margin-bottom: 5px; }
+        .rule-tip { color: #e67e22; font-size: 0.9rem; margin-bottom: 20px; font-weight: bold; }
         .score-board { font-size: 1.2rem; color: #666; margin-bottom: 20px; }
-        .question { font-size: 2.5rem; font-weight: bold; color: #007bff; margin: 20px 0; }
+        .question { font-size: 2.8rem; font-weight: bold; color: #2980b9; margin: 20px 0; letter-spacing: 2px; }
         input[type="number"] {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             padding: 10px;
-            width: 60%;
+            width: 70%;
             text-align: center;
             border: 2px solid #ddd;
             border-radius: 8px;
             outline: none;
         }
-        input[type="number"]:focus { border-color: #007bff; }
+        input[type="number"]:focus { border-color: #2980b9; }
         button {
             font-size: 1.2rem;
-            padding: 10px 20px;
-            background-color: #28a745;
+            padding: 10px 25px;
+            background-color: #27ae60;
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 20px;
+            font-weight: bold;
         }
-        button:hover { background-color: #218838; }
-        .message { margin-top: 15px; font-size: 1.1rem; font-weight: bold; }
-        .correct { color: #28a745; }
-        .wrong { color: #dc3545; }
+        button:hover { background-color: #219653; }
+        .message { margin-top: 15px; font-size: 1.1rem; font-weight: bold; min-height: 25px; }
+        .correct { color: #27ae60; }
+        .wrong { color: #c0392b; }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <h1>⚡ 心算大挑戰</h1>
+    <h1>⚡ 3、4位數加減大挑戰</h1>
+    <div class="rule-tip">🎯 難度升級：三位數與四位數的終極挑戰！</div>
     <div class="score-board">目前得分：<span id="score">0</span></div>
     <div class="question" id="question">? + ? =</div>
-    <input type="number" id="answer" placeholder="請輸入答案" autofocus>
+    <input type="number" id="answer" placeholder="請輸入答案" autofocus autocomplete="off">
     <br>
     <button onclick="checkAnswer()">提交答案</button>
     <div class="message" id="message"></div>
 </div>
 
 <script>
-    let num1, num2, correctAnswer;
+    let num1, num2, correctAnswer, operator;
     let score = 0;
 
     // 產生新題目
     function generateQuestion() {
-        // 隨機產生 1 到 9999 的數字
-        num1 = Math.floor(Math.random() * 9999) + 1;
-        num2 = Math.floor(Math.random() * 9999) + 1;
-        correctAnswer = num1 + num2;
+        let valid = false;
+
+        // 透過迴圈不斷產生數字，直到符合「答案不小於 100」的條件為止
+        while (!valid) {
+            // 隨機產生 100 到 9999 的數字（涵蓋3位數與4位數）
+            num1 = Math.floor(Math.random() * (9999 - 100 + 1)) + 100;
+            num2 = Math.floor(Math.random() * (9999 - 100 + 1)) + 100;
+            
+            // 隨機決定加法或減法 (0 是加法，1 是減法)
+            operator = Math.floor(Math.random() * 2) === 0 ? '+' : '-';
+
+            if (operator === '+') {
+                correctAnswer = num1 + num2;
+            } else {
+                correctAnswer = num1 - num2;
+            }
+
+            // 檢查條件：答案必須大於等於 100 (確保是正數且不少於三位數)
+            if (correctAnswer >= 100) {
+                valid = true;
+            }
+        }
         
-        document.getElementById('question').innerText = `${num1} + ${num2} =`;
+        // 將題目顯示在網頁上
+        document.getElementById('question').innerText = `${num1} ${operator} ${num2} =`;
         document.getElementById('answer').value = '';
         document.getElementById('answer').focus();
     }
@@ -93,24 +115,24 @@
 
         if (userAnswer === correctAnswer) {
             score += 10;
-            messageEl.innerText = "🎉 答對了！太棒了！ (+10分)";
+            messageEl.innerText = "🎉 答對了！太厲害了！ (+10分)";
             messageEl.className = "message correct";
             document.getElementById('score').innerText = score;
             setTimeout(generateQuestion, 1000); // 1秒後自動下一題
         } else {
-            messageEl.innerText = `❌ 答錯囉！正確答案是 ${correctAnswer}，再試一次！`;
+            messageEl.innerText = `❌ 答錯囉！再仔細算一次！`;
             messageEl.className = "message wrong";
         }
     }
 
-    // 監聽 Enter 鍵，按 Enter 就能直接送出答案
+    // 監聽 Enter 鍵
     document.getElementById('answer').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             checkAnswer();
         }
     });
 
-    // 遊戲網頁載入時立刻初始化第一題
+    // 初始化第一題
     generateQuestion();
 </script>
 
