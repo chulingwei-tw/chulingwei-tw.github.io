@@ -33,7 +33,6 @@
             margin: 15px 0;
             padding: 0 10px;
         }
-        /* 計時器樣式 */
         .timer-container {
             width: 100%;
             background-color: #e0e0e0;
@@ -50,7 +49,6 @@
         }
         .question { font-size: 2.8rem; font-weight: bold; color: #2980b9; margin: 25px 0; letter-spacing: 2px; }
         
-        /* 四個選項按鈕排版 */
         .options-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -81,25 +79,48 @@
         .correct { color: #27ae60; }
         .wrong { color: #c0392b; }
 
-        /* 結算畫面彈出視窗 */
+        /* 結算與排行榜視窗 */
         .result-overlay {
             display: none;
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(255, 255, 255, 0.96);
+            background-color: rgba(255, 255, 255, 0.98);
             border-radius: 15px;
             z-index: 10;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
         }
-        .result-overlay h2 { font-size: 2.2rem; color: #2c3e50; margin-bottom: 10px; }
-        .result-overlay p { font-size: 1.4rem; color: #7f8c8d; margin: 10px 0; }
+        .result-overlay h2 { font-size: 2rem; color: #2c3e50; margin: 10px 0 5px 0; }
+        .result-overlay p { font-size: 1.2rem; color: #7f8c8d; margin: 5px 0; }
+        
+        /* 名字輸入框 */
+        .name-input-section { margin: 15px 0; }
+        .name-input-section input {
+            font-size: 1.2rem; padding: 8px; width: 60%;
+            text-align: center; border: 2px solid #ddd; border-radius: 6px;
+        }
+        .name-input-section button {
+            font-size: 1.1rem; padding: 8px 15px; background-color: #3498db;
+            color: white; border: none; border-radius: 6px; cursor: pointer; margin-left: 5px;
+        }
+
+        /* 排行榜表格 */
+        .leaderboard-table {
+            width: 100%; margin-top: 15px; border-collapse: collapse; font-size: 1rem;
+        }
+        .leaderboard-table th, .leaderboard-table td {
+            padding: 8px; border-bottom: 1px solid #ddd; text-align: center;
+        }
+        .leaderboard-table th { background-color: #f2f2f2; color: #333; }
+        .top-rank { font-weight: bold; color: #e74c3c; }
+
         .restart-btn {
-            font-size: 1.3rem; padding: 12px 30px;
+            font-size: 1.2rem; padding: 10px 25px;
             background-color: #27ae60; color: white;
             border: none; border-radius: 8px; cursor: pointer;
-            margin-top: 20px; font-weight: bold;
+            margin-top: 15px; font-weight: bold; width: 60%; align-self: center;
         }
         .restart-btn:hover { background-color: #219653; }
     </style>
@@ -109,22 +130,18 @@
 <div class="game-container">
     <h1>⚡ 3、4位數加減大挑戰</h1>
     
-    <!-- 頂部資訊列 -->
     <div class="info-bar">
         <div>題號：<span id="question-idx">1</span> / 10</div>
         <div>倒數：<span id="timer-text">30</span> 秒</div>
         <div>目前得分：<span id="score">0</span></div>
     </div>
 
-    <!-- 計時進度條 -->
     <div class="timer-container">
         <div class="timer-bar" id="timer-bar"></div>
     </div>
 
-    <!-- 題目區域 -->
     <div class="question" id="question">? + ? =</div>
 
-    <!-- 四個答案選項 -->
     <div class="options-grid">
         <button class="option-btn" onclick="checkAnswer(this)" id="opt0">?</button>
         <button class="option-btn" onclick="checkAnswer(this)" id="opt1">?</button>
@@ -132,14 +149,35 @@
         <button class="option-btn" onclick="checkAnswer(this)" id="opt3">?</button>
     </div>
 
-    <!-- 訊息提示 -->
     <div class="message" id="message"></div>
 
-    <!-- 10題後的結算畫面 -->
+    <!-- 結算與排行榜視窗 -->
     <div class="result-overlay" id="result-overlay">
         <h2>🎉 挑戰完成！ 🎉</h2>
         <p>答對題數：<span id="final-correct">0</span> / 10 題</p>
-        <p>最終得分：<span id="final-score">0</span> 分</p>
+        <p>最終得分：<span id="final-score">0</span> 分 | 總花費時間：<span id="final-time">0</span> 秒</p>
+        
+        <!-- 登錄名字區塊 -->
+        <div class="name-input-section" id="name-input-section">
+            <input type="text" id="player-name" placeholder="請輸入您的英文名字 (例如: Tom)" maxlength="15">
+            <button onclick="submitScore()">登錄排行</button>
+        </div>
+
+        <h3>🏆 榮譽排行榜 (前六名)</h3>
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>名次</th>
+                    <th>名字</th>
+                    <th>得分</th>
+                    <th>總秒數</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+                <!-- 排行榜資料會由 JS 動態生成 -->
+            </tbody>
+        </table>
+
         <button class="restart-btn" onclick="restartGame()">再挑戰一次</button>
     </div>
 </div>
@@ -150,61 +188,56 @@
     let currentQuestionCount = 1;
     let correctCount = 0;
     
-    // 計時器變數
+    // 計時與統計總秒數
     let timeLeft = 30;
     let timerInterval;
+    let totalSecondsUsed = 0; // 紀錄十題總共花了多少秒
 
-    // 產生新題目與四個選項
     function generateQuestion() {
         if (currentQuestionCount > 10) {
             showEndGame();
             return;
         }
 
-        // 更新介面上的題號
         document.getElementById('question-idx').innerText = currentQuestionCount;
         document.getElementById('message').innerText = '';
         enableButtons(true);
 
         let valid = false;
         while (!valid) {
-            num1 = Math.floor(Math.random() * (9999 - 1000 + 1)) + 100;
-            num2 = Math.floor(Math.random() * (9999 - 1000 + 1)) + 100;
+            // 💡 依照您的要求，數字調整為 101 ~ 5999 之間
+            num1 = Math.floor(Math.random() * (5999 - 101 + 1)) + 101;
+            num2 = Math.floor(Math.random() * (5999 - 101 + 1)) + 101;
             operator = Math.floor(Math.random() * 2) === 0 ? '+' : '-';
             correctAnswer = (operator === '+') ? (num1 + num2) : (num1 - num2);
 
-            // 確保答案大於等於 100
+            // 💡 保持不小於 100 的正數規則
             if (correctAnswer >= 100) valid = true;
         }
         
         document.getElementById('question').innerText = `${num1} ${operator} ${num2} = ?`;
 
-        // 產生三個錯誤答案（干擾項，會在正確答案的 ±50 範圍內隨機變動，且不與正確答案重複）
         let optionsSet = new Set();
         optionsSet.add(correctAnswer);
 
         while (optionsSet.size < 4) {
             let offset = (Math.floor(Math.random() * 50) + 1) * (Math.random() < 0.5 ? 1 : -1);
             let wrongAns = correctAnswer + offset;
-            if (wrongAns >= 100) { // 確保干擾項也至少是三位數
+            if (wrongAns >= 100) {
                 optionsSet.add(wrongAns);
             }
         }
 
-        // 將 Set 轉換成陣列並隨機打亂順序
         let optionsArray = Array.from(optionsSet);
         optionsArray.sort(() => Math.random() - 0.5);
 
-        // 將選項塞入四個按鈕
         for (let i = 0; i < 4; i++) {
             document.getElementById(`opt${i}`).innerText = optionsArray[i];
         }
 
-        // 開啟這題的倒數計時
         startTimer();
     }
 
-    // 啟動 30 秒倒數計時器
     function startTimer() {
         clearInterval(timerInterval);
         timeLeft = 30;
@@ -213,11 +246,12 @@
 
         timerInterval = setInterval(() => {
             timeLeft -= 0.1;
+            totalSecondsUsed += 0.1; // 累加總花費秒數
             if (timeLeft <= 0) {
                 clearInterval(timerInterval);
                 document.getElementById('timer-text').innerText = 0;
                 document.getElementById('timer-bar').style.width = '0%';
-                timeOutHandler(); // 時間到處理
+                timeOutHandler();
             } else {
                 document.getElementById('timer-text').innerText = Math.ceil(timeLeft);
                 document.getElementById('timer-bar').style.width = (timeLeft / 30 * 100) + '%';
@@ -225,7 +259,6 @@
         }, 100);
     }
 
-    // 時間到的處理邏輯
     function timeOutHandler() {
         enableButtons(false);
         const messageEl = document.getElementById('message');
@@ -233,13 +266,12 @@
         messageEl.className = "message wrong";
         
         currentQuestionCount++;
-        setTimeout(generateQuestion, 2500); // 2.5秒後進入下一題
+        setTimeout(generateQuestion, 2000);
     }
 
-    // 檢查點選的答案
     function checkAnswer(btnElement) {
-        clearInterval(timerInterval); // 停止計時
-        enableButtons(false); // 點選後立刻禁用按鈕防止重複點擊
+        clearInterval(timerInterval);
+        enableButtons(false);
         
         const userAnswer = parseInt(btnElement.innerText);
         const messageEl = document.getElementById('message');
@@ -256,37 +288,8 @@
         }
 
         currentQuestionCount++;
-        setTimeout(generateQuestion, 2000); // 2秒後進入下一題
+        setTimeout(generateQuestion, 1500);
     }
 
-    // 控制選項按鈕是否可點擊
     function enableButtons(status) {
         for (let i = 0; i < 4; i++) {
-            document.getElementById(`opt${i}`).disabled = !status;
-        }
-    }
-
-    // 顯示結算畫面
-    function showEndGame() {
-        clearInterval(timerInterval);
-        document.getElementById('final-correct').innerText = correctCount;
-        document.getElementById('final-score').innerText = score;
-        document.getElementById('result-overlay').style.display = 'flex';
-    }
-
-    // 重新開始遊戲
-    function restartGame() {
-        score = 0;
-        currentQuestionCount = 1;
-        correctCount = 0;
-        document.getElementById('score').innerText = score;
-        document.getElementById('result-overlay').style.display = 'none';
-        generateQuestion();
-    }
-
-    // 初始化第一題
-    generateQuestion();
-</script>
-
-</body>
-</html>
