@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ 數學心算大挑戰 ⚡</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .game-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 { color: #333; }
+        .score-board { font-size: 1.2rem; color: #666; margin-bottom: 20px; }
+        .question { font-size: 2.5rem; font-weight: bold; color: #007bff; margin: 20px 0; }
+        input[type="number"] {
+            font-size: 1.5rem;
+            padding: 10px;
+            width: 60%;
+            text-align: center;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+        }
+        input[type="number"]:focus { border-color: #007bff; }
+        button {
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover { background-color: #218838; }
+        .message { margin-top: 15px; font-size: 1.1rem; font-weight: bold; }
+        .correct { color: #28a745; }
+        .wrong { color: #dc3545; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <h1>⚡ 心算大挑戰</h1>
+    <div class="score-board">目前得分：<span id="score">0</span></div>
+    <div class="question" id="question">? + ? =</div>
+    <input type="number" id="answer" placeholder="請輸入答案" autofocus>
+    <br>
+    <button onclick="checkAnswer()">提交答案</button>
+    <div class="message" id="message"></div>
+</div>
+
+<script>
+    let num1, num2, correctAnswer;
+    let score = 0;
+
+    // 產生新題目
+    function generateQuestion() {
+        // 隨機產生 1 到 50 的數字
+        num1 = Math.floor(Math.random() * 50) + 1;
+        num2 = Math.floor(Math.random() * 50) + 1;
+        correctAnswer = num1 + num2;
+        
+        document.getElementById('question').innerText = `${num1} + ${num2} =`;
+        document.getElementById('answer').value = '';
+        document.getElementById('answer').focus();
+    }
+
+    // 檢查答案
+    function checkAnswer() {
+        const userAnswer = parseInt(document.getElementById('answer').value);
+        const messageEl = document.getElementById('message');
+
+        if (isNaN(userAnswer)) {
+            messageEl.innerText = "⚠️ 請先輸入數字喔！";
+            messageEl.className = "message wrong";
+            return;
+        }
+
+        if (userAnswer === correctAnswer) {
+            score += 10;
+            messageEl.innerText = "🎉 答對了！太棒了！ (+10分)";
+            messageEl.className = "message correct";
+            document.getElementById('score').innerText = score;
+            setTimeout(generateQuestion, 1000); // 1秒後自動下一題
+        } else {
+            messageEl.innerText = `❌ 答錯囉！正確答案是 ${correctAnswer}，再試一次！`;
+            messageEl.className = "message wrong";
+        }
+    }
+
+    // 監聽 Enter 鍵，按 Enter 就能直接送出答案
+    document.getElementById('answer').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            checkAnswer();
+        }
+    });
+
+    // 遊戲網頁載入時立刻初始化第一題
+    generateQuestion();
+</script>
+
+</body>
+</html>
