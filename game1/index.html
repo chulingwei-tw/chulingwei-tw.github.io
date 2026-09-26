@@ -168,8 +168,8 @@
 
         let valid = false;
         while (!valid) {
-            num1 = Math.floor(Math.random() * (9999 - 100 + 1)) + 100;
-            num2 = Math.floor(Math.random() * (9999 - 100 + 1)) + 100;
+            num1 = Math.floor(Math.random() * (9999 - 1000 + 1)) + 100;
+            num2 = Math.floor(Math.random() * (9999 - 1000 + 1)) + 100;
             operator = Math.floor(Math.random() * 2) === 0 ? '+' : '-';
             correctAnswer = (operator === '+') ? (num1 + num2) : (num1 - num2);
 
