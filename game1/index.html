@@ -136,11 +136,9 @@
 
     function saveScore() {
         let name = document.getElementById('p-name').value.trim();
-        // 修正後的規則，移除錯誤的轉義符號
-        let englishPattern = /^[A-Za-z0-9\s]+\$/;
-
-        if (!name || !englishPattern.test(name)) { 
-            alert("請輸入英文名字或數字！"); 
+         // 💡 徹底修改：不再使用有漏洞的斜線規則！直接檢查是否為空，並過濾掉中文字元
+        if (name === "" || /[\u4e00-\u9fa5]/.test(name)) { 
+            alert("請輸入有效的英文名字或數字，且不能包含中文喔！"); 
             return; 
         }
         let board = JSON.parse(localStorage.getItem('math_board')) || [];
