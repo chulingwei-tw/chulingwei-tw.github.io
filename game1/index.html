@@ -136,7 +136,7 @@
 
     function saveScore() {
         let name = document.getElementById('p-name').value.trim();
-        // 💡 修正這裡的檢查規則：允許英文字母（大小寫）、數字與空格
+        // 修正後的規則，移除錯誤的轉義符號
         let englishPattern = /^[A-Za-z0-9\s]+\$/;
 
         if (!name || !englishPattern.test(name)) { 
